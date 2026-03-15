@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="icon" type="image/x-icon" href="assets/img/pos-system.png">
@@ -38,7 +39,7 @@
                     <nav>
                         <ul class="flex flex-col gap-2">
                             <li>
-                                <a href="tienda.php" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-active text-blue-400 font-semibold transition-all duration-300">
+                                <a href="tienda.php" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 font-medium transition-all duration-300">
                                     <i data-lucide="shopping-cart" class="w-5 h-5"></i>
                                     Tienda
                                 </a>
@@ -56,7 +57,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="ajustes.php" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 font-medium transition-all duration-300">
+                                <a href="ajustes.php" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-active text-blue-400 font-semibold transition-all duration-300">
                                     <i data-lucide="settings" class="w-5 h-5"></i>
                                     Ajustes
                                 </a>
@@ -90,9 +91,6 @@
             lucide.createIcons();
         </script>
     </header>
-
-    <main class="flex-1 bg-slate-100 h-screen">
-    </main>
 </body>
 
 </html>
