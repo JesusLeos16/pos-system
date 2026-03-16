@@ -81,16 +81,25 @@
                         Cerrar Sesión
                     </a>
                 </div>
-
             </aside>
 
+            <main class="flex-1 bg-slate-100 h-screen p-8">
+                <a href="../productos/crear.php" class="flex flex-row justify-end w-fit items-center gap-3 px-4 py-3 rounded-lg bg-active text-blue-400 font-semibold transition-all duration-300">
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                    Crear Producto
+                </a>
+
+                <div class="flex flex-col gap-4">
+
+                </div>
+
+            </main>
 
         </div>
 
         <script>
             lucide.createIcons();
         </script>
-    </header>
 </body>
 
 </html>
