@@ -42,25 +42,25 @@ $categorias = $pdo->query("SELECT * FROM categorias")->fetchAll(PDO::FETCH_ASSOC
                 <nav>
                     <ul class="flex flex-col gap-2">
                         <li>
-                            <a href="../tienda.php" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 font-medium transition-all duration-300">
+                            <a href="../Pages/tienda.php" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 font-medium transition-all duration-300">
                                 <i data-lucide="shopping-cart" class="w-5 h-5"></i>
                                 Tienda
                             </a>
                         </li>
                         <li>
-                            <a href="../inventario.php" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-active text-blue-400 font-semibold transition-all duration-300">
+                            <a href="../Pages/inventario.php" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-active text-blue-400 font-semibold transition-all duration-300">
                                 <i data-lucide="package" class="w-5 h-5"></i>
                                 Inventario
                             </a>
                         </li>
                         <li>
-                            <a href="../reportes.php" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 font-medium transition-all duration-300">
+                            <a href="../Pages/reportes.php" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 font-medium transition-all duration-300">
                                 <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
                                 Reportes
                             </a>
                         </li>
                         <li>
-                            <a href="../ajustes.php" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 font-medium transition-all duration-300">
+                            <a href="../Pages/ajustes.php" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 font-medium transition-all duration-300">
                                 <i data-lucide="settings" class="w-5 h-5"></i>
                                 Ajustes
                             </a>
@@ -79,7 +79,7 @@ $categorias = $pdo->query("SELECT * FROM categorias")->fetchAll(PDO::FETCH_ASSOC
                         <p class="text-slate-400 text-xs">Administrador</p>
                     </div>
                 </div>
-                <a href="../../index.php" class="flex items-center gap-3 text-slate-400 hover:text-slate-200 text-sm transition-all duration-300">
+                <a href="../index.php" class="flex items-center gap-3 text-slate-400 hover:text-slate-200 text-sm transition-all duration-300">
                     <i data-lucide="log-out" class="w-4 h-4"></i>
                     Cerrar Sesión
                 </a>
@@ -95,7 +95,7 @@ $categorias = $pdo->query("SELECT * FROM categorias")->fetchAll(PDO::FETCH_ASSOC
                     <h2 class="text-2xl font-bold text-slate-800">Agregar Nuevo Producto</h2>
                     <p class="text-slate-500 text-sm mt-1">Completa la información del producto</p>
                 </div>
-                <a href="../pages/inventario.php" class="flex items-center gap-2 text-slate-500 hover:text-slate-700 transition-all duration-300">
+                <a href="../Pages/inventario.php" class="flex items-center gap-2 text-slate-500 hover:text-slate-700 transition-all duration-300">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
                     Volver al Inventario
                 </a>
@@ -178,7 +178,7 @@ $categorias = $pdo->query("SELECT * FROM categorias")->fetchAll(PDO::FETCH_ASSOC
 
                 <!-- Botones -->
                 <div class="flex justify-end gap-4 mt-8 pt-6 border-t border-slate-200">
-                    <a href="../pages/inventario.php" class="px-6 py-3 text-sm font-semibold text-slate-600 hover:text-slate-800 transition-all duration-300 rounded-lg hover:bg-slate-100">
+                    <a href="../Pages/inventario.php" class="px-6 py-3 text-sm font-semibold text-slate-600 hover:text-slate-800 transition-all duration-300 rounded-lg hover:bg-slate-100">
                         Descartar
                     </a>
                     <button type="submit" class="px-6 py-3 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-all duration-300 shadow-sm">
