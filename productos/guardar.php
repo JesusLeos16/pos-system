@@ -31,10 +31,10 @@ try {
         ':imagen'       => $imagen,
     ]);
 
-    header('Location: crear.php?success=1');
+    header('Location: ../Pages/inventario.php?success=1');
     exit;
 } catch (PDOException $e) {
     // SKU duplicado
-    header('Location: crear.php?error=sku_duplicado');
+    header('Location: ../Pages/inventario.php?error=sku_duplicado');
     exit;
 }

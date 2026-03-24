@@ -1,6 +1,14 @@
 <?php
 include '../db/conexion.php';
 
+// Convierte link de Google Drive a link directo de imagen
+function driveDirectLink($url) {
+    if (preg_match('/\/d\/([a-zA-Z0-9_-]+)/', $url, $matches)) {
+        return 'https://lh3.googleusercontent.com/d/' . $matches[1];
+    }
+    return $url;
+}
+
 // Consultar productos con su categoría
 $stmt = $pdo->query("
     SELECT p.*, c.nombre AS categoria_nombre 
