@@ -1,4 +1,5 @@
 <?php
+include '../db/auth.php';
 include '../db/conexion.php';
 
 // Convierte link de Google Drive a link directo de imagen
@@ -93,14 +94,14 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
             <div class="flex flex-col gap-4">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-blue-700 flex items-center justify-center text-white font-bold text-sm">
-                        YO
+                        <?= strtoupper(substr($_SESSION['nombre'], 0, 2)) ?>
                     </div>
                     <div>
-                        <p class="text-white text-sm font-semibold">Usuario</p>
-                        <p class="text-slate-400 text-xs">Administrador</p>
+                        <p class="text-white text-sm font-semibold"><?= htmlspecialchars($_SESSION['nombre']) ?></p>
+                        <p class="text-slate-400 text-xs"><?= htmlspecialchars($_SESSION['rol']) ?></p>
                     </div>
                 </div>
-                <a href="../index.php" class="flex items-center gap-3 text-slate-400 hover:text-slate-200 text-sm transition-all duration-300">
+                <a href="../logout.php" class="flex items-center gap-3 text-slate-400 hover:text-slate-200 text-sm transition-all duration-300">
                     <i data-lucide="log-out" class="w-4 h-4"></i>
                     Cerrar Sesión
                 </a>
