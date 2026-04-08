@@ -1,9 +1,5 @@
 <?php
-/**
- * Migración: Crear tablas de ventas
- * Ejecutar una sola vez desde el navegador: /pos-system/db/migration_ventas.php
- */
-include 'conexion.php';
+include 'db/conexion.php';
 
 try {
     $pdo->exec("SET FOREIGN_KEY_CHECKS=0;");
@@ -43,11 +39,7 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     ");
 
-    echo "<h2 style='color:green'>✅ Tablas creadas exitosamente</h2>";
-    echo "<p>- ventas</p>";
-    echo "<p>- venta_detalle</p>";
-    echo "<br><a href='../Pages/tienda.php'>Ir a la Tienda</a>";
-
+    echo "✅ Tablas recreadas exitosamente\n";
 } catch (PDOException $e) {
-    echo "<h2 style='color:red'>❌ Error: " . $e->getMessage() . "</h2>";
+    echo "❌ Error: " . $e->getMessage() . "\n";
 }
