@@ -12,7 +12,7 @@ $categorias = $pdo->query("SELECT * FROM categorias")->fetchAll(PDO::FETCH_ASSOC
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="icon" type="image/png" href="/pos-system/src/favicon.png">
+    <link rel="icon" type="image/png" href="/pos-system/src/favicon.png?v=3">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -37,15 +37,38 @@ $categorias = $pdo->query("SELECT * FROM categorias")->fetchAll(PDO::FETCH_ASSOC
             }
         }
     </script>
+    <style>
+        #sidebar-overlay {
+            transition: opacity 0.3s ease;
+        }
+        #sidebar-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #sidebar-mobile {
+            transition: transform 0.3s ease;
+        }
+        #sidebar-mobile.sidebar-closed {
+            transform: translateX(-100%);
+        }
+    </style>
 
 </head>
 
 <body class="font-body">
     <div class="flex">
-        <aside class="flex flex-col bg-tertiary-dark w-64 h-screen px-5 py-6 justify-between fixed">
+
+        <!-- Sidebar overlay (mobile) -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
+        <!-- Sidebar -->
+        <aside id="sidebar-mobile" class="flex flex-col bg-tertiary-dark w-64 h-screen px-5 py-6 justify-between fixed z-50 sidebar-closed lg:!transform-none">
             <div>
-                <div class="flex items-center gap-3 mb-10">
-                    <img src="/pos-system/src/kkream_logo.png" alt="KKream" class="h-10">
+                <div class="flex items-center justify-between gap-3 mb-10">
+                    <img src="/pos-system/src/kkream_logo.png" alt="KKream" class="h-24">
+                    <button onclick="toggleSidebar()" class="lg:hidden p-2 text-primary/70 hover:text-primary rounded-lg transition-all duration-300">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
                 </div>
 
                 <nav>
@@ -96,12 +119,21 @@ $categorias = $pdo->query("SELECT * FROM categorias")->fetchAll(PDO::FETCH_ASSOC
         </aside>
 
         <!-- Contenido principal -->
-        <main class="flex-1 bg-neutral min-h-screen ml-64 p-8">
+        <main class="flex-1 bg-neutral min-h-screen lg:ml-64 p-4 sm:p-6 lg:p-8">
+
+            <!-- Mobile top bar -->
+            <div class="flex items-center justify-between mb-4 lg:hidden">
+                <button onclick="toggleSidebar()" class="p-2 text-tertiary-dark hover:bg-primary/20 rounded-lg transition-all duration-300">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <img src="/pos-system/src/kkream_logo.png" alt="KKream" class="h-10">
+                <div class="w-10"></div>
+            </div>
 
             <!-- Encabezado -->
-            <div class="flex items-center justify-between mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-3">
                 <div>
-                    <h2 class="text-2xl font-heading font-bold text-tertiary-dark">Agregar Nuevo Producto</h2>
+                    <h2 class="text-xl sm:text-2xl font-heading font-bold text-tertiary-dark">Agregar Nuevo Producto</h2>
                     <p class="text-tertiary-light text-sm mt-1">Completa la información del producto</p>
                 </div>
                 <a href="../Pages/inventario.php" class="flex items-center gap-2 text-tertiary-light hover:text-tertiary transition-all duration-300">
@@ -111,7 +143,7 @@ $categorias = $pdo->query("SELECT * FROM categorias")->fetchAll(PDO::FETCH_ASSOC
             </div>
 
             <!-- Formulario -->
-            <form action="guardar.php" method="POST" enctype="multipart/form-data" class="bg-white rounded-xl shadow-sm border border-primary/20 p-8">
+            <form action="guardar.php" method="POST" enctype="multipart/form-data" class="bg-white rounded-xl shadow-sm border border-primary/20 p-5 sm:p-6 lg:p-8">
 
 
 
@@ -129,7 +161,7 @@ $categorias = $pdo->query("SELECT * FROM categorias")->fetchAll(PDO::FETCH_ASSOC
                     </div>
 
                     <!-- Categoria y SKU -->
-                    <div class="flex gap-4">
+                    <div class="flex flex-col sm:flex-row gap-4">
                         <div class="flex-1">
                             <label for="categoria" class="block text-sm font-semibold text-tertiary-dark mb-2">
                                 Categoría <span class="text-red-500">*</span>
@@ -151,7 +183,7 @@ $categorias = $pdo->query("SELECT * FROM categorias")->fetchAll(PDO::FETCH_ASSOC
                     </div>
 
                     <!-- Precio y Stock -->
-                    <div class="flex gap-4">
+                    <div class="flex flex-col sm:flex-row gap-4">
                         <div class="flex-1">
                             <label for="precio" class="block text-sm font-semibold text-tertiary-dark mb-2">
                                 Precio <span class="text-red-500">*</span>
@@ -170,7 +202,7 @@ $categorias = $pdo->query("SELECT * FROM categorias")->fetchAll(PDO::FETCH_ASSOC
                         </div>
 
                     </div>
-                    <div class="flex gap-8">
+                    <div>
 
                         <!-- Columna izquierda: Imagen -->
                         <div>
@@ -186,8 +218,8 @@ $categorias = $pdo->query("SELECT * FROM categorias")->fetchAll(PDO::FETCH_ASSOC
                 </div>
 
                 <!-- Botones -->
-                <div class="flex justify-end gap-4 mt-8 pt-6 border-t border-primary/20">
-                    <a href="../Pages/inventario.php" class="px-6 py-3 text-sm font-semibold text-tertiary-light hover:text-tertiary transition-all duration-300 rounded-lg hover:bg-primary/10">
+                <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 mt-8 pt-6 border-t border-primary/20">
+                    <a href="../Pages/inventario.php" class="px-6 py-3 text-sm font-semibold text-tertiary-light hover:text-tertiary transition-all duration-300 rounded-lg hover:bg-primary/10 text-center">
                         Descartar
                     </a>
                     <button type="submit" class="px-6 py-3 bg-tertiary text-white text-sm font-heading font-semibold rounded-lg hover:bg-tertiary-dark transition-all duration-300 shadow-sm">
@@ -202,6 +234,13 @@ $categorias = $pdo->query("SELECT * FROM categorias")->fetchAll(PDO::FETCH_ASSOC
 
     <script>
         lucide.createIcons();
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar-mobile');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('sidebar-closed');
+            overlay.classList.toggle('hidden');
+        }
     </script>
 </body>
 

@@ -40,7 +40,7 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="icon" type="image/png" href="/pos-system/src/favicon.png">
+    <link rel="icon" type="image/png" href="/pos-system/src/favicon.png?v=3">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -65,16 +65,37 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
             }
         }
     </script>
+    <style>
+        #sidebar-overlay {
+            transition: opacity 0.3s ease;
+        }
+        #sidebar-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #sidebar-mobile {
+            transition: transform 0.3s ease;
+        }
+        #sidebar-mobile.sidebar-closed {
+            transform: translateX(-100%);
+        }
+    </style>
 </head>
 
 <body class="font-body">
     <div class="flex h-screen overflow-hidden">
 
+        <!-- Sidebar overlay (mobile) -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
         <!-- Sidebar -->
-        <aside class="flex flex-col bg-tertiary-dark w-64 min-w-[16rem] h-screen px-5 py-6 justify-between">
+        <aside id="sidebar-mobile" class="flex flex-col bg-tertiary-dark w-64 min-w-[16rem] h-screen px-5 py-6 justify-between fixed lg:relative z-50 sidebar-closed lg:!transform-none">
             <div>
-                <div class="flex items-center gap-3 mb-10">
-                    <img src="/pos-system/src/kkream_logo.png" alt="KKream" class="h-10">
+                <div class="flex items-center justify-between gap-3 mb-10">
+                    <img src="/pos-system/src/kkream_logo.png" alt="KKream" class="h-24">
+                    <button onclick="toggleSidebar()" class="lg:hidden p-2 text-primary/70 hover:text-primary rounded-lg transition-all duration-300">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
                 </div>
 
                 <nav>
@@ -128,30 +149,42 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
         <main class="flex-1 bg-neutral h-screen overflow-y-auto">
 
             <!-- Barra superior -->
-            <div class="sticky top-0 z-10 bg-white border-b border-primary/20 px-8 py-4 flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <a href="../Pages/inventario.php" class="flex items-center gap-2 text-tertiary hover:text-tertiary-dark text-sm font-medium transition-all duration-300">
-                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                        Volver al Inventario
-                    </a>
-                    <span class="text-primary">|</span>
-                    <h2 class="text-sm font-heading font-bold text-tertiary-dark">Editar Producto</h2>
-                </div>
-                <div class="flex items-center gap-3">
-                    <a href="../Pages/inventario.php" class="px-4 py-2 text-sm font-medium text-tertiary-light hover:text-tertiary transition-all duration-300">
-                        Descartar
-                    </a>
-                    <button type="submit" form="form-editar" class="px-5 py-2 bg-tertiary text-white text-sm font-heading font-semibold rounded-lg hover:bg-tertiary-dark transition-all duration-300 shadow-sm">
-                        Guardar Cambios
+            <div class="sticky top-0 z-10 bg-white border-b border-primary/20 px-4 sm:px-8 py-4">
+                <!-- Mobile top row -->
+                <div class="flex items-center justify-between lg:hidden mb-3">
+                    <button onclick="toggleSidebar()" class="p-2 text-tertiary-dark hover:bg-primary/20 rounded-lg transition-all duration-300">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
+                    <img src="/pos-system/src/kkream_logo.png" alt="KKream" class="h-10">
+                    <div class="w-10"></div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-center gap-4">
+                        <a href="../Pages/inventario.php" class="flex items-center gap-2 text-tertiary hover:text-tertiary-dark text-sm font-medium transition-all duration-300">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            <span class="hidden sm:inline">Volver al Inventario</span>
+                            <span class="sm:hidden">Volver</span>
+                        </a>
+                        <span class="text-primary hidden sm:inline">|</span>
+                        <h2 class="text-sm font-heading font-bold text-tertiary-dark hidden sm:block">Editar Producto</h2>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <a href="../Pages/inventario.php" class="px-4 py-2 text-sm font-medium text-tertiary-light hover:text-tertiary transition-all duration-300">
+                            Descartar
+                        </a>
+                        <button type="submit" form="form-editar" class="px-5 py-2 bg-tertiary text-white text-sm font-heading font-semibold rounded-lg hover:bg-tertiary-dark transition-all duration-300 shadow-sm">
+                            Guardar Cambios
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div class="p-8">
+            <div class="p-4 sm:p-6 lg:p-8">
 
                 <!-- Encabezado del producto -->
-                <div class="mb-8">
-                    <h1 class="text-2xl font-heading font-bold text-tertiary-dark"><?= htmlspecialchars($producto['nombre']) ?></h1>
+                <div class="mb-6 sm:mb-8">
+                    <h1 class="text-xl sm:text-2xl font-heading font-bold text-tertiary-dark"><?= htmlspecialchars($producto['nombre']) ?></h1>
                     <p class="text-tertiary-light text-sm mt-1">
                         ID: <?= $producto['id'] ?>
                         <?php if ($producto['sku']): ?>
@@ -160,13 +193,13 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
                     </p>
                 </div>
 
-                <form id="form-editar" action="actualizar.php" method="POST" class="flex gap-6">
+                <form id="form-editar" action="actualizar.php" method="POST" class="flex flex-col lg:flex-row gap-6">
 
                     <!-- Columna izquierda -->
                     <div class="flex-1 flex flex-col gap-6">
 
                         <!-- Sección 01: Información General -->
-                        <div class="bg-white rounded-xl border border-primary/20 p-6">
+                        <div class="bg-white rounded-xl border border-primary/20 p-5 sm:p-6">
                             <div class="flex items-center gap-3 mb-5">
                                 <span class="text-xs font-heading font-bold text-tertiary uppercase tracking-wider">Sección 01</span>
                                 <h3 class="text-lg font-heading font-bold text-tertiary-dark">Información General</h3>
@@ -183,10 +216,10 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
                         </div>
 
                         <!-- Secciones 02 y 03 en fila -->
-                        <div class="flex gap-6">
+                        <div class="flex flex-col md:flex-row gap-6">
 
                             <!-- Sección 02: Precio y Categoría -->
-                            <div class="flex-1 bg-white rounded-xl border border-primary/20 p-6">
+                            <div class="flex-1 bg-white rounded-xl border border-primary/20 p-5 sm:p-6">
                                 <div class="flex items-center gap-3 mb-5">
                                     <span class="text-xs font-heading font-bold text-tertiary uppercase tracking-wider">Sección 02</span>
                                     <h3 class="text-lg font-heading font-bold text-tertiary-dark">Precio y Categoría</h3>
@@ -223,7 +256,7 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
                             </div>
 
                             <!-- Sección 03: Stock -->
-                            <div class="flex-1 bg-white rounded-xl border border-primary/20 p-6">
+                            <div class="flex-1 bg-white rounded-xl border border-primary/20 p-5 sm:p-6">
                                 <div class="flex items-center gap-3 mb-5">
                                     <span class="text-xs font-heading font-bold text-tertiary uppercase tracking-wider">Sección 03</span>
                                     <h3 class="text-lg font-heading font-bold text-tertiary-dark">Stock</h3>
@@ -267,8 +300,8 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
                     </div>
 
                     <!-- Columna derecha: Imagen -->
-                    <div class="w-80">
-                        <div class="bg-white rounded-xl border border-primary/20 p-6">
+                    <div class="w-full lg:w-80">
+                        <div class="bg-white rounded-xl border border-primary/20 p-5 sm:p-6">
                             <div class="flex items-center gap-3 mb-5">
                                 <span class="text-xs font-heading font-bold text-tertiary uppercase tracking-wider">Sección 04</span>
                                 <h3 class="text-lg font-heading font-bold text-tertiary-dark">Imagen</h3>
@@ -295,7 +328,7 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
                         </div>
 
                         <!-- Zona de peligro -->
-                        <div class="bg-white rounded-xl border border-red-200 p-6 mt-6">
+                        <div class="bg-white rounded-xl border border-red-200 p-5 sm:p-6 mt-6">
                             <h3 class="text-sm font-heading font-bold text-red-600 mb-3">Zona de Peligro</h3>
                             <p class="text-xs text-tertiary-light mb-4">Esta acción no se puede deshacer. El producto será eliminado permanentemente.</p>
                             <a href="eliminar.php?id=<?= $producto['id'] ?>" onclick="return confirm('¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede deshacer.')"
@@ -313,6 +346,13 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
 
     <script>
         lucide.createIcons();
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar-mobile');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('sidebar-closed');
+            overlay.classList.toggle('hidden');
+        }
     </script>
 </body>
 

@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Iniciar Sesión - K&Kream</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="icon" type="image/png" href="/pos-system/src/favicon.png">
+    <link rel="icon" type="image/png" href="/pos-system/src/favicon.png?v=3">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body class="font-body">
-    <div class="flex h-screen">
+    <div class="flex min-h-screen">
 
         <!-- Lado izquierdo: Imagen hero -->
         <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden">
@@ -85,12 +85,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <!-- Lado derecho: Formulario -->
-        <div class="flex-1 bg-neutral flex items-center justify-center px-8">
+        <div class="flex-1 bg-neutral flex items-center justify-center px-5 sm:px-8 py-8">
             <div class="w-full max-w-md">
 
+                <!-- Logo solo en móvil -->
+                <div class="flex justify-center mb-6 lg:hidden">
+                    <img src="/pos-system/src/kkream_logo.png" alt="KKream" class="h-20">
+                </div>
+
                 <!-- Título -->
-                <div class="mb-8">
-                    <h1 class="font-heading text-4xl font-extrabold text-tertiary-dark leading-tight">
+                <div class="mb-8 text-center lg:text-left">
+                    <h1 class="font-heading text-3xl sm:text-4xl font-extrabold text-tertiary-dark leading-tight">
                         Bienvenido al<br>punto dulce
                     </h1>
                     <p class="text-tertiary-light font-body text-sm mt-3">
@@ -149,7 +154,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
         </div>
-    </div>
     </div>
 
     <script>
