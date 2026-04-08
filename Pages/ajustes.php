@@ -339,9 +339,14 @@ if ($isAdmin) {
 
                     <div>
                         <label class="block text-xs font-bold text-tertiary-light uppercase tracking-wider mb-2">
-                            Contraseña <span id="pwd-req" class="text-xs text-primary font-normal">(Requerida)</span>
+                            Contraseña <span id="pwd-req" class="text-xs text-primary font-normal">(Requerida para nuevo)</span>
                         </label>
                         <input type="password" id="user-pwd" class="w-full px-4 py-2 border border-primary/30 rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-tertiary transition">
+                    </div>
+
+                    <div class="border-t border-primary/20 pt-4 mt-2">
+                        <label class="block text-xs font-bold text-tertiary-dark uppercase tracking-wider mb-2 text-primary">Para autorizar, ingresa tu contraseña actual</label>
+                        <input type="password" id="admin-auth-pwd" required placeholder="Ingresa tu propia contraseña" class="w-full px-4 py-2 border border-primary/30 rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-tertiary transition bg-neutral focus:bg-white text-tertiary-dark">
                     </div>
 
                     <div class="pt-4 flex gap-3">
@@ -465,6 +470,7 @@ if ($isAdmin) {
             document.getElementById('modal-user-title').textContent = 'Nuevo Usuario';
             document.getElementById('pwd-req').textContent = '(Requerida)';
             document.getElementById('user-pwd').required = true;
+            document.getElementById('admin-auth-pwd').value = '';
             document.getElementById('usuario-modal').classList.remove('hidden');
         }
 
@@ -474,6 +480,7 @@ if ($isAdmin) {
             document.getElementById('user-nombre').value = user.nombre;
             document.getElementById('user-username').value = user.username;
             document.getElementById('user-rol').value = user.rol;
+            document.getElementById('admin-auth-pwd').value = '';
             
             document.getElementById('modal-user-title').textContent = 'Editar Usuario';
             document.getElementById('pwd-req').textContent = '(Opcional)';
@@ -494,7 +501,8 @@ if ($isAdmin) {
                 nombre: document.getElementById('user-nombre').value,
                 username: document.getElementById('user-username').value,
                 rol: document.getElementById('user-rol').value,
-                password: document.getElementById('user-pwd').value
+                password: document.getElementById('user-pwd').value,
+                admin_password: document.getElementById('admin-auth-pwd').value
             };
 
             try {

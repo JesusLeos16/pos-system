@@ -19,6 +19,22 @@ $nombre = trim($input['nombre'] ?? '');
 $username = trim($input['username'] ?? '');
 $password = trim($input['password'] ?? '');
 $rol = trim($input['rol'] ?? 'cajero');
+$admin_password = trim($input['admin_password'] ?? '');
+
+if (empty($admin_password)) {
+    echo json_encode(['success' => false, 'error' => 'Debes confirmar con tu contraseña actual para autorizar la acción']);
+    exit;
+}
+
+// Verificar que el admin que está haciendo la acción sabe su propia contraseña
+$stmtAdmin = $pdo->prepare("SELECT password FROM usuarios WHERE id = :id");
+$stmtAdmin->execute([':id' => $_SESSION['usuario_id']]);
+$currentAdmin = $stmtAdmin->fetch(PDO::FETCH_ASSOC);
+
+if (!$currentAdmin || !password_verify($admin_password, $currentAdmin['password'])) {
+    echo json_encode(['success' => false, 'error' => 'Autorización denegada: Tu contraseña actual es incorrecta']);
+    exit;
+}
 
 // Update or Create
 $id = intval($input['id'] ?? 0);
