@@ -1,4 +1,5 @@
 <?php
+include '../db/auth.php';
 include '../db/conexion.php';
 
 if (!isset($_GET['id'])) {

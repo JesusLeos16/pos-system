@@ -88,6 +88,35 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
             opacity: 0;
             pointer-events: none;
         }
+        /* Modal animations */
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        /* Toast animations */
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        .toast-enter {
+            animation: slideInRight 0.3s ease forwards;
+        }
+        .toast-exit {
+            animation: slideOutRight 0.3s ease forwards;
+        }
+        /* Print styles */
+        @media print {
+            body * { visibility: hidden; }
+            #recibo-modal, #recibo-modal * { visibility: visible; }
+            #recibo-modal { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none !important; }
+        }
     </style>
 </head>
 
@@ -102,7 +131,6 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
             <div>
                 <div class="flex items-center justify-between gap-3 mb-10">
                     <img src="/pos-system/src/kkream_logo.png" alt="KKream" class="h-24">
-                    <!-- Close button (mobile) -->
                     <button onclick="toggleSidebar()" class="lg:hidden p-2 text-primary/70 hover:text-primary rounded-lg transition-all duration-300">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
@@ -242,14 +270,13 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
                 <div>
                     <h2 class="text-lg font-heading font-bold text-tertiary-dark">Orden Actual</h2>
                     <p class="text-xs text-tertiary-light mt-0.5" id="orden-info">
-                        Orden #<?= rand(1000, 9999) ?> - <?= date('d/m/Y, H:i') ?>
+                        <?= date('d/m/Y, H:i') ?>
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
                     <button onclick="limpiarCarrito()" class="p-2 text-tertiary-light hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200" title="Limpiar orden">
                         <i data-lucide="trash-2" class="w-5 h-5"></i>
                     </button>
-                    <!-- Close button (mobile) -->
                     <button onclick="toggleCart()" class="p-2 text-tertiary-light hover:text-tertiary rounded-lg transition-all duration-200 lg:hidden" title="Cerrar">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
@@ -258,7 +285,6 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
 
             <!-- Items del carrito -->
             <div id="carrito-items" class="flex-1 overflow-y-auto p-5">
-                <!-- Estado vacío -->
                 <div id="carrito-vacio" class="flex flex-col items-center justify-center h-full text-primary">
                     <i data-lucide="shopping-bag" class="w-12 h-12 mb-3"></i>
                     <p class="text-sm font-medium text-tertiary-light">Carrito vacío</p>
@@ -268,8 +294,6 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
 
             <!-- Footer: Totales y cobrar -->
             <div class="border-t border-primary/20">
-
-                <!-- Totales -->
                 <div class="px-5 pt-4 pb-2 space-y-2">
                     <div class="flex justify-between text-sm text-tertiary-light">
                         <span>Subtotal</span>
@@ -285,20 +309,188 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
                     </div>
                 </div>
 
-                <!-- Botón cobrar -->
                 <div class="p-5 pt-3 pb-safe">
-                    <button onclick="cobrar()" id="btn-cobrar" class="w-full py-3.5 bg-tertiary text-white font-heading font-semibold rounded-xl hover:bg-tertiary-dark transition-all duration-300 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <button onclick="abrirModalCobro()" id="btn-cobrar" class="w-full py-3.5 bg-tertiary text-white font-heading font-semibold rounded-xl hover:bg-tertiary-dark transition-all duration-300 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                         <span>Cobrar</span>
                         <i data-lucide="credit-card" class="w-5 h-5"></i>
                     </button>
                 </div>
             </div>
-
         </aside>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[999] flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- MODAL: Cobrar -->
+    <div id="cobro-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="modal-overlay absolute inset-0 bg-black/50" onclick="cerrarModalCobro()"></div>
+        <div class="modal-content absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
+                <!-- Header -->
+                <div class="bg-tertiary-dark px-6 py-5">
+                    <h3 class="text-lg font-heading font-bold text-primary">Confirmar Cobro</h3>
+                    <p class="text-primary/60 text-xs mt-1">Selecciona método de pago</p>
+                </div>
+
+                <div class="p-6">
+                    <!-- Total -->
+                    <div class="text-center mb-6">
+                        <p class="text-sm text-tertiary-light">Total a cobrar</p>
+                        <p id="modal-total" class="text-4xl font-heading font-extrabold text-tertiary-dark mt-1">$0.00</p>
+                    </div>
+
+                    <!-- Método de pago -->
+                    <div class="grid grid-cols-3 gap-3 mb-6">
+                        <button onclick="seleccionarMetodo('efectivo')" id="btn-efectivo" class="metodo-btn flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-tertiary bg-tertiary/5 transition-all duration-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-tertiary"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+                            <span class="text-xs font-semibold text-tertiary">Efectivo</span>
+                        </button>
+                        <button onclick="seleccionarMetodo('tarjeta')" id="btn-tarjeta" class="metodo-btn flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-primary/30 hover:border-tertiary/50 transition-all duration-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-tertiary-light"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                            <span class="text-xs font-semibold text-tertiary-light">Tarjeta</span>
+                        </button>
+                        <button onclick="seleccionarMetodo('transferencia')" id="btn-transferencia" class="metodo-btn flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-primary/30 hover:border-tertiary/50 transition-all duration-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-tertiary-light"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+                            <span class="text-xs font-semibold text-tertiary-light">Transferencia</span>
+                        </button>
+                    </div>
+
+                    <!-- Campo de monto recibido (solo efectivo) -->
+                    <div id="campo-efectivo" class="mb-6">
+                        <label class="block text-xs font-bold text-tertiary-light uppercase tracking-wider mb-2">Monto Recibido</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary-light text-sm font-semibold">$</span>
+                            <input type="number" id="monto-recibido" step="0.01" min="0" placeholder="0.00"
+                                class="w-full pl-8 pr-4 py-3 border border-primary/30 rounded-lg text-lg font-bold text-tertiary-dark focus:outline-none focus:ring-2 focus:ring-tertiary/30 focus:border-tertiary/40 transition-all duration-300"
+                                oninput="calcularCambio()">
+                        </div>
+                        <div id="cambio-display" class="mt-3 p-3 bg-secondary/20 border border-secondary/40 rounded-lg hidden">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-medium text-tertiary-dark">Cambio:</span>
+                                <span id="cambio-valor" class="text-lg font-bold text-green-700">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="flex gap-3">
+                        <button onclick="cerrarModalCobro()" class="flex-1 py-3 text-sm font-semibold text-tertiary-light hover:text-tertiary rounded-xl hover:bg-primary/10 transition-all duration-300">
+                            Cancelar
+                        </button>
+                        <button onclick="procesarCobro()" id="btn-procesar" class="flex-1 py-3 bg-tertiary text-white text-sm font-heading font-semibold rounded-xl hover:bg-tertiary-dark transition-all duration-300 shadow-sm flex items-center justify-center gap-2">
+                            <span>Confirmar</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Recibo -->
+    <div id="recibo-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="modal-overlay absolute inset-0 bg-black/50"></div>
+        <div class="modal-content absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl w-full max-w-sm shadow-xl overflow-hidden">
+                <!-- Ticket -->
+                <div class="p-6" id="recibo-contenido">
+                    <div class="text-center mb-4">
+                        <h3 class="text-lg font-heading font-bold text-tertiary-dark">K&Kream</h3>
+                        <p class="text-xs text-tertiary-light">Punto de Venta</p>
+                    </div>
+
+                    <div class="border-t border-dashed border-tertiary-light/30 pt-3 mb-3">
+                        <div class="flex justify-between text-xs text-tertiary-light">
+                            <span>Orden:</span>
+                            <span id="recibo-orden" class="font-semibold text-tertiary-dark">—</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-tertiary-light mt-1">
+                            <span>Fecha:</span>
+                            <span id="recibo-fecha" class="text-tertiary-dark">—</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-tertiary-light mt-1">
+                            <span>Cajero:</span>
+                            <span id="recibo-cajero" class="text-tertiary-dark">—</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-tertiary-light mt-1">
+                            <span>Pago:</span>
+                            <span id="recibo-metodo" class="text-tertiary-dark capitalize">—</span>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-dashed border-tertiary-light/30 pt-3 mb-3">
+                        <div id="recibo-items" class="space-y-2"></div>
+                    </div>
+
+                    <div class="border-t border-dashed border-tertiary-light/30 pt-3 space-y-1">
+                        <div class="flex justify-between text-xs text-tertiary-light">
+                            <span>Subtotal</span>
+                            <span id="recibo-subtotal">—</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-tertiary-light">
+                            <span>IVA (16%)</span>
+                            <span id="recibo-impuesto">—</span>
+                        </div>
+                        <div class="flex justify-between text-sm font-bold text-tertiary-dark pt-1">
+                            <span>TOTAL</span>
+                            <span id="recibo-total">—</span>
+                        </div>
+                        <div id="recibo-cambio-row" class="flex justify-between text-xs text-green-700 hidden">
+                            <span>Cambio</span>
+                            <span id="recibo-cambio">—</span>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4 pt-3 border-t border-dashed border-tertiary-light/30">
+                        <p class="text-xs text-tertiary-light">¡Gracias por tu compra!</p>
+                    </div>
+                </div>
+
+                <!-- Botones del recibo -->
+                <div class="px-6 pb-6 flex gap-3 no-print">
+                    <button onclick="window.print()" class="flex-1 py-3 border border-primary/30 text-sm font-semibold text-tertiary rounded-xl hover:bg-primary/10 transition-all duration-300 flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                        Imprimir
+                    </button>
+                    <button onclick="cerrarRecibo()" class="flex-1 py-3 bg-tertiary text-white text-sm font-heading font-semibold rounded-xl hover:bg-tertiary-dark transition-all duration-300">
+                        Nueva Venta
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
         lucide.createIcons();
+
+        // === TOAST NOTIFICATIONS ===
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const colors = {
+                success: 'bg-green-600',
+                error: 'bg-red-600',
+                info: 'bg-tertiary',
+            };
+            const icons = {
+                success: '✓',
+                error: '✕',
+                info: 'ℹ',
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto flex items-center gap-3 px-5 py-3 ${colors[type]} text-white rounded-xl shadow-lg text-sm font-medium toast-enter`;
+            toast.innerHTML = `
+                <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">${icons[type]}</span>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('toast-enter');
+                toast.classList.add('toast-exit');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
 
         // === SIDEBAR TOGGLE (mobile) ===
         function toggleSidebar() {
@@ -318,6 +510,7 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
 
         // === CARRITO ===
         let carrito = [];
+        let metodoPago = 'efectivo';
 
         function agregarAlCarrito(el) {
             const id = el.dataset.id;
@@ -330,9 +523,13 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
             if (existente) {
                 if (existente.cantidad < stock) {
                     existente.cantidad++;
+                    showToast(`${nombre} (x${existente.cantidad})`, 'info');
+                } else {
+                    showToast('Stock máximo alcanzado', 'error');
                 }
             } else {
                 carrito.push({ id, nombre, precio, cantidad: 1, stock });
+                showToast(`${nombre} agregado`, 'success');
             }
 
             renderCarrito();
@@ -424,15 +621,172 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
             document.getElementById('total').textContent = '$' + total.toFixed(2);
         }
 
-        function cobrar() {
+        function getTotal() {
+            const subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            return subtotal + (subtotal * 0.16);
+        }
+
+        // === MODAL COBRO ===
+        function abrirModalCobro() {
             if (carrito.length === 0) return;
-            const total = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0) * 1.16;
-            alert('Cobro realizado: $' + total.toFixed(2));
-            limpiarCarrito();
-            // Close cart on mobile after checkout
-            if (window.innerWidth < 1024) {
-                toggleCart();
+            document.getElementById('cobro-modal').classList.remove('hidden');
+            document.getElementById('modal-total').textContent = '$' + getTotal().toFixed(2);
+            document.getElementById('monto-recibido').value = '';
+            document.getElementById('cambio-display').classList.add('hidden');
+            seleccionarMetodo('efectivo');
+        }
+
+        function cerrarModalCobro() {
+            document.getElementById('cobro-modal').classList.add('hidden');
+        }
+
+        function seleccionarMetodo(metodo) {
+            metodoPago = metodo;
+            document.querySelectorAll('.metodo-btn').forEach(btn => {
+                btn.classList.remove('border-tertiary', 'bg-tertiary/5');
+                btn.classList.add('border-primary/30');
+                btn.querySelector('span').classList.remove('text-tertiary');
+                btn.querySelector('span').classList.add('text-tertiary-light');
+            });
+            const activeBtn = document.getElementById('btn-' + metodo);
+            activeBtn.classList.add('border-tertiary', 'bg-tertiary/5');
+            activeBtn.classList.remove('border-primary/30');
+            activeBtn.querySelector('span').classList.add('text-tertiary');
+            activeBtn.querySelector('span').classList.remove('text-tertiary-light');
+
+            // Mostrar/ocultar campo de efectivo
+            document.getElementById('campo-efectivo').style.display = metodo === 'efectivo' ? 'block' : 'none';
+        }
+
+        function calcularCambio() {
+            const monto = parseFloat(document.getElementById('monto-recibido').value) || 0;
+            const total = getTotal();
+            const cambio = monto - total;
+            const display = document.getElementById('cambio-display');
+            const valor = document.getElementById('cambio-valor');
+
+            if (monto > 0) {
+                display.classList.remove('hidden');
+                if (cambio >= 0) {
+                    valor.textContent = '$' + cambio.toFixed(2);
+                    valor.className = 'text-lg font-bold text-green-700';
+                } else {
+                    valor.textContent = '-$' + Math.abs(cambio).toFixed(2);
+                    valor.className = 'text-lg font-bold text-red-600';
+                }
+            } else {
+                display.classList.add('hidden');
             }
+        }
+
+        // === PROCESAR VENTA ===
+        async function procesarCobro() {
+            if (carrito.length === 0) return;
+
+            const btnProcesar = document.getElementById('btn-procesar');
+            btnProcesar.disabled = true;
+            btnProcesar.innerHTML = '<span>Procesando...</span>';
+
+            const montoRecibido = metodoPago === 'efectivo' ? parseFloat(document.getElementById('monto-recibido').value) || null : null;
+
+            // Validar monto en efectivo
+            if (metodoPago === 'efectivo' && montoRecibido !== null && montoRecibido < getTotal()) {
+                showToast('El monto recibido es menor al total', 'error');
+                btnProcesar.disabled = false;
+                btnProcesar.innerHTML = '<span>Confirmar</span>';
+                return;
+            }
+
+            try {
+                const response = await fetch('../ventas/procesar.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        items: carrito,
+                        metodo_pago: metodoPago,
+                        monto_recibido: montoRecibido,
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    cerrarModalCobro();
+                    mostrarRecibo(data);
+                    showToast('¡Venta registrada correctamente!', 'success');
+
+                    // Actualizar stock visual en las cards
+                    carrito.forEach(item => {
+                        const card = document.querySelector(`.product-card[data-id="${item.id}"]`);
+                        if (card) {
+                            const newStock = parseInt(card.dataset.stock) - item.cantidad;
+                            card.dataset.stock = newStock;
+                            if (newStock <= 0) {
+                                card.style.display = 'none';
+                            }
+                        }
+                    });
+
+                    carrito = [];
+                    renderCarrito();
+                    updateCartBadge();
+
+                    if (window.innerWidth < 1024) {
+                        const cart = document.getElementById('cart-panel');
+                        const overlay = document.getElementById('cart-overlay');
+                        if (!cart.classList.contains('cart-closed')) {
+                            cart.classList.add('cart-closed');
+                            overlay.classList.add('hidden');
+                        }
+                    }
+                } else {
+                    showToast(data.error || 'Error al procesar la venta', 'error');
+                }
+            } catch (error) {
+                showToast('Error de conexión con el servidor', 'error');
+                console.error(error);
+            }
+
+            btnProcesar.disabled = false;
+            btnProcesar.innerHTML = '<span>Confirmar</span>';
+        }
+
+        // === RECIBO ===
+        function mostrarRecibo(data) {
+            document.getElementById('recibo-orden').textContent = data.numero_orden;
+            document.getElementById('recibo-fecha').textContent = data.fecha;
+            document.getElementById('recibo-cajero').textContent = data.cajero;
+            document.getElementById('recibo-metodo').textContent = data.metodo_pago;
+            document.getElementById('recibo-subtotal').textContent = '$' + parseFloat(data.subtotal).toFixed(2);
+            document.getElementById('recibo-impuesto').textContent = '$' + parseFloat(data.impuesto).toFixed(2);
+            document.getElementById('recibo-total').textContent = '$' + parseFloat(data.total).toFixed(2);
+
+            // Cambio
+            const cambioRow = document.getElementById('recibo-cambio-row');
+            if (data.cambio !== null && data.cambio !== undefined) {
+                cambioRow.classList.remove('hidden');
+                document.getElementById('recibo-cambio').textContent = '$' + parseFloat(data.cambio).toFixed(2);
+            } else {
+                cambioRow.classList.add('hidden');
+            }
+
+            // Items
+            let itemsHtml = '';
+            data.items.forEach(item => {
+                const sub = (parseFloat(item.precio) * parseInt(item.cantidad)).toFixed(2);
+                itemsHtml += `
+                    <div class="flex justify-between text-xs">
+                        <span class="text-tertiary-dark">${item.cantidad}x ${item.nombre}</span>
+                        <span class="text-tertiary-dark font-semibold">$${sub}</span>
+                    </div>`;
+            });
+            document.getElementById('recibo-items').innerHTML = itemsHtml;
+
+            document.getElementById('recibo-modal').classList.remove('hidden');
+        }
+
+        function cerrarRecibo() {
+            document.getElementById('recibo-modal').classList.add('hidden');
         }
 
         // === BÚSQUEDA ===
@@ -449,7 +803,6 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
 
         // === FILTRO POR CATEGORÍA ===
         function filtrarCategoria(cat) {
-            // Actualizar botón activo
             document.querySelectorAll('.cat-btn').forEach(btn => {
                 if (btn.dataset.cat === cat) {
                     btn.classList.add('bg-tertiary', 'text-white', 'border-tertiary');
@@ -460,7 +813,6 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
                 }
             });
 
-            // Filtrar cards
             document.querySelectorAll('.product-card').forEach(card => {
                 if (cat === 'todos') {
                     card.style.display = '';
