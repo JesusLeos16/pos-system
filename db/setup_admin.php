@@ -12,9 +12,9 @@ if ($count > 0) {
 }
 
 // Crear usuario admin
-$username = 'admin';
-$password = password_hash('admin123', PASSWORD_DEFAULT);
-$nombre   = 'Administrador';
+$username = 'Satevoyork';
+$password = password_hash('PueblitoMagico', PASSWORD_DEFAULT);
+$nombre   = 'Satevoyork';
 $rol      = 'admin';
 
 $stmt = $pdo->prepare("
@@ -28,9 +28,3 @@ $stmt->execute([
     ':nombre'   => $nombre,
     ':rol'      => $rol,
 ]);
-
-echo "✅ Usuario admin creado exitosamente.<br>";
-echo "Usuario: <strong>admin</strong><br>";
-echo "Contraseña: <strong>admin123</strong><br>";
-echo "<br><strong>⚠️ Cambia la contraseña después de iniciar sesión.</strong>";
-echo '<br><br><a href="../index.php">Ir al Login</a>';
