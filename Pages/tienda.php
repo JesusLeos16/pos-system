@@ -32,7 +32,7 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="icon" type="image/png" href="/pos-system/src/favicon.png">
+    <link rel="icon" type="image/png" href="/pos-system/src/favicon.png?v=3">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -57,16 +57,55 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
             }
         }
     </script>
+    <style>
+        /* Sidebar overlay */
+        #sidebar-overlay {
+            transition: opacity 0.3s ease;
+        }
+        #sidebar-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        /* Sidebar mobile slide */
+        #sidebar-mobile {
+            transition: transform 0.3s ease;
+        }
+        #sidebar-mobile.sidebar-closed {
+            transform: translateX(-100%);
+        }
+        /* Cart panel mobile slide */
+        #cart-panel {
+            transition: transform 0.3s ease;
+        }
+        #cart-panel.cart-closed {
+            transform: translateY(100%);
+        }
+        /* Cart overlay */
+        #cart-overlay {
+            transition: opacity 0.3s ease;
+        }
+        #cart-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
 </head>
 
 <body class="font-body">
     <div class="flex h-screen overflow-hidden">
 
+        <!-- Sidebar overlay (mobile) -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
         <!-- Sidebar -->
-        <aside class="flex flex-col bg-tertiary-dark w-64 min-w-[16rem] h-screen px-5 py-6 justify-between">
+        <aside id="sidebar-mobile" class="flex flex-col bg-tertiary-dark w-64 min-w-[16rem] h-screen px-5 py-6 justify-between fixed lg:relative z-50 sidebar-closed lg:!transform-none">
             <div>
-                <div class="flex items-center gap-3 mb-10">
-                    <img src="/pos-system/src/kkream_logo.png" alt="KKream" class="h-10">
+                <div class="flex items-center justify-between gap-3 mb-10">
+                    <img src="/pos-system/src/kkream_logo.png" alt="KKream" class="h-24">
+                    <!-- Close button (mobile) -->
+                    <button onclick="toggleSidebar()" class="lg:hidden p-2 text-primary/70 hover:text-primary rounded-lg transition-all duration-300">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
                 </div>
 
                 <nav>
@@ -117,7 +156,19 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
         </aside>
 
         <!-- Catálogo de productos -->
-        <main class="flex-1 bg-neutral h-screen overflow-y-auto p-6">
+        <main class="flex-1 bg-neutral h-screen overflow-y-auto p-4 sm:p-6 pb-20 lg:pb-6">
+
+            <!-- Mobile top bar -->
+            <div class="flex items-center justify-between mb-4 lg:hidden">
+                <button onclick="toggleSidebar()" class="p-2 text-tertiary-dark hover:bg-primary/20 rounded-lg transition-all duration-300">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <img src="/pos-system/src/kkream_logo.png" alt="KKream" class="h-10">
+                <button onclick="toggleCart()" class="p-2 text-tertiary-dark hover:bg-primary/20 rounded-lg transition-all duration-300 relative">
+                    <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+                    <span id="cart-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-tertiary text-white text-xs font-bold rounded-full flex items-center justify-center hidden">0</span>
+                </button>
+            </div>
 
             <!-- Barra de búsqueda -->
             <div class="relative mb-5">
@@ -127,7 +178,7 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
             </div>
 
             <!-- Filtros de categoría -->
-            <div class="flex gap-2 mb-6 overflow-x-auto pb-1">
+            <div class="flex gap-2 mb-6 overflow-x-auto pb-1 scrollbar-hide">
                 <button onclick="filtrarCategoria('todos')" class="cat-btn active-cat px-4 py-2 rounded-full text-sm font-heading font-semibold bg-tertiary text-white transition-all duration-300 whitespace-nowrap" data-cat="todos">
                     Todos
                 </button>
@@ -139,7 +190,7 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
             </div>
 
             <!-- Grid de productos -->
-            <div id="productos-grid" class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div id="productos-grid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                 <?php foreach ($productos as $prod): ?>
                     <div class="product-card bg-white rounded-xl border border-primary/20 overflow-hidden cursor-pointer hover:shadow-md hover:border-tertiary/30 transition-all duration-300"
                         data-id="<?= $prod['id'] ?>"
@@ -151,21 +202,21 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
                         onclick="agregarAlCarrito(this)">
 
                         <!-- Imagen -->
-                        <div class="h-36 bg-primary/10 flex items-center justify-center overflow-hidden">
+                        <div class="h-28 sm:h-36 bg-primary/10 flex items-center justify-center overflow-hidden">
                             <?php if (!empty($prod['imagen'])): ?>
                                 <img src="<?= htmlspecialchars(driveDirectLink($prod['imagen'])) ?>" alt="<?= htmlspecialchars($prod['nombre']) ?>" class="w-full h-full object-cover">
                             <?php else: ?>
                                 <div class="flex flex-col items-center gap-1 text-primary">
-                                    <i data-lucide="ice-cream-cone" class="w-10 h-10"></i>
+                                    <i data-lucide="ice-cream-cone" class="w-8 h-8 sm:w-10 sm:h-10"></i>
                                 </div>
                             <?php endif; ?>
                         </div>
 
                         <!-- Info -->
-                        <div class="p-3">
-                            <h3 class="text-sm font-heading font-semibold text-tertiary-dark truncate"><?= htmlspecialchars($prod['nombre']) ?></h3>
-                            <p class="text-xs text-tertiary-light mt-0.5"><?= htmlspecialchars($prod['categoria_nombre'] ?? 'Sin categoría') ?></p>
-                            <p class="text-sm font-bold text-tertiary mt-2">$<?= number_format($prod['precio'], 2) ?></p>
+                        <div class="p-2.5 sm:p-3">
+                            <h3 class="text-xs sm:text-sm font-heading font-semibold text-tertiary-dark truncate"><?= htmlspecialchars($prod['nombre']) ?></h3>
+                            <p class="text-[10px] sm:text-xs text-tertiary-light mt-0.5"><?= htmlspecialchars($prod['categoria_nombre'] ?? 'Sin categoría') ?></p>
+                            <p class="text-sm font-bold text-tertiary mt-1.5 sm:mt-2">$<?= number_format($prod['precio'], 2) ?></p>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -180,8 +231,11 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
             <?php endif; ?>
         </main>
 
+        <!-- Cart overlay (mobile) -->
+        <div id="cart-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden" onclick="toggleCart()"></div>
+
         <!-- Panel de orden actual -->
-        <aside class="w-80 min-w-[20rem] bg-white border-l border-primary/20 h-screen flex flex-col">
+        <aside id="cart-panel" class="w-full sm:w-96 lg:w-80 lg:min-w-[20rem] bg-white border-l border-primary/20 h-screen flex flex-col fixed lg:relative bottom-0 left-0 right-0 z-50 cart-closed lg:!transform-none rounded-t-2xl lg:rounded-none shadow-2xl lg:shadow-none max-h-[85vh] lg:max-h-none">
 
             <!-- Header de la orden -->
             <div class="flex items-center justify-between p-5 border-b border-primary/20">
@@ -191,9 +245,15 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
                         Orden #<?= rand(1000, 9999) ?> - <?= date('d/m/Y, H:i') ?>
                     </p>
                 </div>
-                <button onclick="limpiarCarrito()" class="p-2 text-tertiary-light hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200" title="Limpiar orden">
-                    <i data-lucide="trash-2" class="w-5 h-5"></i>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="limpiarCarrito()" class="p-2 text-tertiary-light hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200" title="Limpiar orden">
+                        <i data-lucide="trash-2" class="w-5 h-5"></i>
+                    </button>
+                    <!-- Close button (mobile) -->
+                    <button onclick="toggleCart()" class="p-2 text-tertiary-light hover:text-tertiary rounded-lg transition-all duration-200 lg:hidden" title="Cerrar">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
             </div>
 
             <!-- Items del carrito -->
@@ -226,7 +286,7 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
                 </div>
 
                 <!-- Botón cobrar -->
-                <div class="p-5 pt-3">
+                <div class="p-5 pt-3 pb-safe">
                     <button onclick="cobrar()" id="btn-cobrar" class="w-full py-3.5 bg-tertiary text-white font-heading font-semibold rounded-xl hover:bg-tertiary-dark transition-all duration-300 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                         <span>Cobrar</span>
                         <i data-lucide="credit-card" class="w-5 h-5"></i>
@@ -239,6 +299,22 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
 
     <script>
         lucide.createIcons();
+
+        // === SIDEBAR TOGGLE (mobile) ===
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar-mobile');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('sidebar-closed');
+            overlay.classList.toggle('hidden');
+        }
+
+        // === CART TOGGLE (mobile) ===
+        function toggleCart() {
+            const cart = document.getElementById('cart-panel');
+            const overlay = document.getElementById('cart-overlay');
+            cart.classList.toggle('cart-closed');
+            overlay.classList.toggle('hidden');
+        }
 
         // === CARRITO ===
         let carrito = [];
@@ -260,6 +336,7 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
             }
 
             renderCarrito();
+            updateCartBadge();
         }
 
         function cambiarCantidad(id, delta) {
@@ -275,16 +352,28 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
             }
 
             renderCarrito();
+            updateCartBadge();
         }
 
         function limpiarCarrito() {
             carrito = [];
             renderCarrito();
+            updateCartBadge();
+        }
+
+        function updateCartBadge() {
+            const badge = document.getElementById('cart-badge');
+            const totalItems = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+            if (totalItems > 0) {
+                badge.textContent = totalItems;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
         }
 
         function renderCarrito() {
             const container = document.getElementById('carrito-items');
-            const vacio = document.getElementById('carrito-vacio');
             const btnCobrar = document.getElementById('btn-cobrar');
 
             if (carrito.length === 0) {
@@ -340,6 +429,10 @@ $categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre ASC")->fetch
             const total = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0) * 1.16;
             alert('Cobro realizado: $' + total.toFixed(2));
             limpiarCarrito();
+            // Close cart on mobile after checkout
+            if (window.innerWidth < 1024) {
+                toggleCart();
+            }
         }
 
         // === BÚSQUEDA ===
